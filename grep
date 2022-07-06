@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+# grep - print lines that match a pattern
+#
+# USAGE
+#     grep [OPTION...] PATTERN [FILE...]
+#
+# OPTIONS
+#     -v, --invert-match
+#         Invert the sense of matching; select non-matching lines.
+
+from getopt import getopt
+from sys import argv, stdin
+
+def error(*msg):
+    print('grep:', *msg)
+
+def usage():
+    print('usage: grep [OPTION...] PATTERN [FILE...]')
+
+invert = False;
+def match(res):
+    return res == -1 if invert else res > -1
+
+def parse(f, pattern):
+    for line in f:
+        if match(line.find(pattern)):
+            print(line, end='')
+
+if __name__ == '__main__':
+    opts, argv = getopt(argv[1:], 'v', ['invert-match'])
+
+    for opt, val in opts:
+        if opt == '-v' or opt == '--invert-match':
+            invert = True
+
+    argc = len(argv)
+    if argc < 1:
+        error('missing arguments')
+        usage()
+    elif argc == 1:
+        parse(stdin, argv[0])
+    else:
+        for fname in argv[1:]:
+            with open(fname, 'r') as f:
+                parse(f, argv[0])
