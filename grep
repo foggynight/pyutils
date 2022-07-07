@@ -18,6 +18,7 @@
 
 from getopt import getopt
 from sys import argv, stdin
+import re
 
 long_options = ['line-number', 'file-path', 'invert-match']
 config = dict(zip(long_options, [False] * len(long_options)))
@@ -29,11 +30,12 @@ def usage():
     print('usage: grep [OPTION...] PATTERN [FILE...]')
 
 def match(res):
-    return res == -1 if config['invert-match'] else res > -1
+    found = res != None
+    return not found if config['invert-match'] else found
 
-def parse(f, name, pattern):
+def parse(f, name, regex):
     for i, line in enumerate(f):
-        if match(line.find(pattern)):
+        if match(regex.search(line)):
             if config['file-path']:
                 print(name, end=':')
             if config['line-number']:
@@ -56,10 +58,11 @@ if __name__ == '__main__':
         error('missing arguments')
         usage()
     elif argc == 1:
-        parse(stdin, argv[0])
+        parse(stdin, re.compile(argv[0]))
     else:
         if argc > 2:
             config['file-path'] = True
         for name in argv[1:]:
+            regex = re.compile(argv[0])
             with open(name, 'r') as f:
-                parse(f, name, argv[0])
+                parse(f, name, regex)
