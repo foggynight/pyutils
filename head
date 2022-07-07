@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+# head - print the first lines of files
+#
+# USAGE
+#     head [OPTION...] COUNT [FILE...]
+#
+# OPTIONS
+#     -p, --file-path
+#         Prefix each line of output with the file path of its input file.
+
+from getopt import getopt
+from sys import argv, stdin
+
+long_options = ['file-path']
+config = dict(zip(long_options, [False] * len(long_options)))
+
+def error(*msg):
+    print('head:', *msg)
+    usage()
+    exit()
+
+def usage():
+    print('usage: head [OPTION...] COUNT [FILE...]')
+
+def head(f, count):
+    for i in range(count):
+        line = f.readline()
+        if line == '':
+            break
+        print(line, end='')
+
+if __name__ == '__main__':
+    opts, argv = getopt(argv[1:], 'npv', long_options)
+
+    for opt, val in opts:
+        if opt == '-p' or opt == '--file-path':
+            config['file-path'] = True
+
+    argc = len(argv)
+    if argc < 1:
+        error('missing arguments')
+    try:
+        count = int(argv[0])
+    except:
+        error('invalid COUNT argument')
+
+    if argc == 1:
+        head(stdin, count)
+    else:
+        for name in argv[1:]:
+            with open(name, 'r') as f:
+                head(f, count)
