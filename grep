@@ -60,8 +60,6 @@ if __name__ == '__main__':
     elif argc == 1:
         parse(stdin, re.compile(argv[0]))
     else:
-        if argc > 2:
-            config['file-path'] = True
         for name in argv[1:]:
             regex = re.compile(argv[0])
             with open(name, 'r') as f:
