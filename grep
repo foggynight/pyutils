@@ -6,11 +6,21 @@
 #     grep [OPTION...] PATTERN [FILE...]
 #
 # OPTIONS
+#     -n, --line-number
+#         Prefix each line of output with 1-based line number within its input
+#         file.
+#
+#     -p, --file-path
+#         Prefix each line of output with the file path of its input file.
+#
 #     -v, --invert-match
 #         Invert the sense of matching; select non-matching lines.
 
 from getopt import getopt
 from sys import argv, stdin
+
+long_options = ['line-number', 'file-path', 'invert-match']
+config = dict(zip(long_options, [False] * len(long_options)))
 
 def error(*msg):
     print('grep:', *msg)
@@ -18,21 +28,28 @@ def error(*msg):
 def usage():
     print('usage: grep [OPTION...] PATTERN [FILE...]')
 
-invert = False;
 def match(res):
-    return res == -1 if invert else res > -1
+    return res == -1 if config['invert-match'] else res > -1
 
-def parse(f, pattern):
-    for line in f:
+def parse(f, name, pattern):
+    for i, line in enumerate(f):
         if match(line.find(pattern)):
+            if config['file-path']:
+                print(name, end=':')
+            if config['line-number']:
+                print(i+1, end=':')
             print(line, end='')
 
 if __name__ == '__main__':
-    opts, argv = getopt(argv[1:], 'v', ['invert-match'])
+    opts, argv = getopt(argv[1:], 'npv', long_options)
 
     for opt, val in opts:
-        if opt == '-v' or opt == '--invert-match':
-            invert = True
+        if opt == '-n' or opt == '--line-number':
+            config['line-number'] = True
+        elif opt == '-p' or opt == '--file-path':
+            config['file-path'] = True
+        elif opt == '-v' or opt == '--invert-match':
+            config['invert-match'] = True
 
     argc = len(argv)
     if argc < 1:
@@ -41,6 +58,8 @@ if __name__ == '__main__':
     elif argc == 1:
         parse(stdin, argv[0])
     else:
-        for fname in argv[1:]:
-            with open(fname, 'r') as f:
-                parse(f, argv[0])
+        if argc > 2:
+            config['file-path'] = True
+        for name in argv[1:]:
+            with open(name, 'r') as f:
+                parse(f, name, argv[0])
