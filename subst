@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+# subst - substitute REGEX with SUBST
+#
+# USAGE
+#     subst REGEX SUBST [FILE]
+
+import re
+from sys import argv, stdin
+
+def error(*msg): print("subst:", *msg)
+def usage(): print("usage: subst REGEX SUBST")
+
+def subst(f, regex, subst):
+    for line in f.readlines():
+        print(regex.sub(subst, line), end="")
+
+if __name__ == "__main__":
+    argc = len(argv)
+    if argc < 3:
+        error("missing arguments")
+        usage()
+
+    if argc == 3:
+        subst(stdin, re.compile(argv[1]), argv[2])
+    else:
+        regex = re.compile(argv[1], flags=re.S)
+        for name in argv[3:]:
+            with open(name, "r") as f:
+                subst(f, regex, argv[1])
